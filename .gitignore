@@ -1,0 +1,10 @@
+.metals/
+*.class
+.idea
+.bloop
+target/
+**/.DS_Store
+.vscode/
+.bsp
+.scala/
+*.scala.semanticdb
