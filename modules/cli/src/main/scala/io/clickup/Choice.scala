@@ -60,7 +60,7 @@ object Choice {
     Opts
       .option[TimeRange.Shortcut](
         "range",
-        s"The range shortcut. Valid values: ${TimeRange.Shortcut.values.mkString(", ")}"
+        s"The range shortcut. Valid values: ${TimeRange.Shortcut.values.map(_.value).mkString(", ")}"
       )
       .map(shortcut => TimeRange.Quick(shortcut))
 

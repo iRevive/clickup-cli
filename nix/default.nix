@@ -4,6 +4,7 @@ let
   version = "0.0.1";
   pname = "clickup-cli";
   src = ./../.;
+  completions = ./completions.zsh;
 in
 sbt-derivation.lib.mkSbtDerivation {
   inherit pkgs version pname src;
@@ -13,6 +14,7 @@ sbt-derivation.lib.mkSbtDerivation {
   nativeBuildInputs = [
     pkgs.s2n-tls
     pkgs.which
+    pkgs.installShellFiles
   ];
 
   buildPhase = ''
@@ -23,6 +25,6 @@ sbt-derivation.lib.mkSbtDerivation {
     mkdir -p $out/bin
     cp clickup-cli $out/bin/clickup-cli
     chmod 0755 $out/bin/clickup-cli
+    installShellCompletion --name _${pname} --zsh ${completions}
  '';
-  # installShellCompletion --name _${pname} --zsh ${completions}
 }
