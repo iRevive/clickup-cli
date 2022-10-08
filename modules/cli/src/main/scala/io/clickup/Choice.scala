@@ -191,7 +191,7 @@ object Choice {
     def read(string: String): ValidatedNel[String, TimeRange.Shortcut] =
       TimeRange.Shortcut.values.find(_.value === string).toValidNel(s"Cannot parse [$string] as range")
 
-    def defaultMetavar: String = TimeRange.Shortcut.values.mkString(", ")
+    def defaultMetavar: String = TimeRange.Shortcut.values.map(_.value).mkString(", ")
   }
 
 }
