@@ -40,7 +40,7 @@ class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Confi
               val status = task.status.status.hexColor(task.status.color)
 
               Console[F].println(
-                colorize"Task [${taskId.toString.cyan}${task.url.fold("")(r => s" $r")}] - $status - ${task.name}"
+                colorize"Task [${taskId.toString.cyan}${task.url.fold("")(r => s" $r")}] - $status - ${task.name}".render
               )
             }
           )

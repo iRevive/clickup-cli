@@ -18,7 +18,7 @@ import io.clickup.model.TeamId
 import io.clickup.model.TaskId
 import io.clickup.util.color.*
 import io.clickup.util.time.*
-import org.polyvariant.colorize.*
+import org.polyvariant.colorize.trueColor.*
 
 import scala.concurrent.duration
 import scala.concurrent.duration.FiniteDuration
@@ -51,7 +51,7 @@ object Summary {
         for {
           _ <- Console[F].println(s"Summary [$start -> $end] ($timeRangeDays days):")
           _ <- Console[F].println("")
-          _ <- Console[F].println(colorize"You have reported ${total.pretty.cyan} in ${logs.size.toString.green} tasks")
+          _ <- Console[F].println(colorize"You have reported ${total.pretty.cyan} in ${logs.size.toString.green} tasks".render)
           _ <- logTimeLogs[F](logs, teamId).whenA(mode.detailed)
         } yield ()
 
