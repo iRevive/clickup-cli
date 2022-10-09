@@ -28,6 +28,7 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
       "org.http4s"          %%% "http4s-client"       % "0.23.16",
       "org.http4s"          %%% "http4s-ember-client" % "0.23.16",
       "org.http4s"          %%% "http4s-circe"        % "0.23.16",
+      "org.polyvariant"     %%% "colorize"            % "0.3.0",
       "io.circe"            %%% "circe-parser"        % "0.14.3",
       "io.circe"            %%% "circe-generic"       % "0.14.3",
       "com.disneystreaming" %%% "weaver-cats"         % "0.8.0" % Test,
