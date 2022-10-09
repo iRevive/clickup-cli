@@ -51,7 +51,9 @@ object Summary {
         for {
           _ <- Console[F].println(s"Summary [$start -> $end] ($timeRangeDays days):")
           _ <- Console[F].println("")
-          _ <- Console[F].println(colorize"You have reported ${total.pretty.cyan} in ${logs.size.toString.green} tasks".render)
+          _ <- Console[F].println(
+            colorize"You have reported ${total.pretty.cyan} in ${logs.size.toString.green} tasks".render
+          )
           _ <- logTimeLogs[F](logs, teamId).whenA(mode.detailed)
         } yield ()
 
