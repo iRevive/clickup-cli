@@ -22,6 +22,7 @@ import io.clickup.timelog.{Comparison, Report, Summary, Timelog}
 import io.clickup.util.Prompt
 import io.clickup.util.color.*
 import io.clickup.util.time.*
+import org.polyvariant.colorize.trueColor.*
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -39,7 +40,7 @@ class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Confi
               val status = task.status.status.hexColor(task.status.color)
 
               Console[F].println(
-                s"Task [${taskId.toString.cyan}${task.url.fold("")(r => s" $r")}] - $status - ${task.name}"
+                colorize"Task [${taskId.toString.cyan}${task.url.fold("")(r => s" $r")}] - $status - ${task.name}".render
               )
             }
           )
