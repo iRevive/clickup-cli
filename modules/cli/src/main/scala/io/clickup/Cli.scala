@@ -15,6 +15,7 @@ import cats.syntax.foldable.*
 import cats.syntax.functor.*
 import cats.syntax.monadError.*
 import cats.syntax.parallel.*
+import fs2.data.csv.lowlevel
 import fs2.io.file.{Files, Path}
 import io.clickup.api.ApiClient
 import io.clickup.model.{TaskId, TimeRange}
@@ -159,13 +160,8 @@ class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Confi
       .through(fs2.text.utf8.decode)
       .through(fs2.text.lines)
       .drop(drop)
-      .filter(_.nonEmpty)
-      .zipWithIndex
-      .evalMap { case (line, index) =>
-        Async[F]
-          .delay(Timelog.Local.fromCSVLine(line))
-          .onError(e => Console[F].println(s"[$index] Cannot parse line $line. $e"))
-      }
+      .through(lowlevel.rows[F, String]())
+      .through(lowlevel.decode[F, Timelog.Local])
       .compile
       .toList
 }

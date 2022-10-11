@@ -24,6 +24,7 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
       "org.typelevel"       %%% "cats-effect"         % "3.3.14",
       "com.monovore"        %%% "decline-effect"      % "2.3.1",
       "co.fs2"              %%% "fs2-io"              % "3.3.0",
+      "org.gnieh"           %%% "fs2-data-csv"        % "1.5.1",
       "org.http4s"          %%% "http4s-core"         % "0.23.16",
       "org.http4s"          %%% "http4s-client"       % "0.23.16",
       "org.http4s"          %%% "http4s-ember-client" % "0.23.16",
