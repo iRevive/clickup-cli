@@ -3,6 +3,8 @@ package io.clickup.timelog
 import java.time.{LocalDate, ZoneOffset}
 import java.time.format.DateTimeFormatter
 
+import cats.syntax.either.*
+import fs2.data.csv.{CellDecoder, DecoderError, DecoderResult, Row, RowDecoder}
 import io.clickup.api.TimeEntry as ApiTimelog
 import io.clickup.model.TaskId
 
@@ -29,16 +31,26 @@ object Timelog {
   object Local {
     private val DateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-    def fromCSVLine(input: String): Timelog.Local = {
-      val Array(date, duration, title) = input.split(",").map(_.trim)
-      val Array(h, m, s)               = duration.split(":").map(_.toInt)
+    given RowDecoder[Local] = new RowDecoder[Local] {
+      given CellDecoder[LocalDate] = CellDecoder.localDateDecoder(DateFormat)
 
-      Timelog.Local(
-        LocalDate.parse(date, DateFormat),
-        h.hours + m.minutes + s.seconds,
-        title,
-        TaskId.fromString(title).fold(sys.error, identity)
-      )
+      given CellDecoder[FiniteDuration] = new CellDecoder[FiniteDuration] {
+        def apply(cell: String): DecoderResult[FiniteDuration] =
+          Either
+            .catchNonFatal {
+              val Array(h, m, s) = cell.split(":").map(_.toInt)
+              h.hours + m.minutes + s.seconds
+            }
+            .leftMap(e => DecoderError(s"Cannot decode [$cell] as hh:mm:ss", inner = e))
+      }
+
+      def apply(row: Row): DecoderResult[Timelog.Local] =
+        for {
+          date     <- row.asAt[LocalDate](0)
+          duration <- row.asAt[FiniteDuration](1)
+          title    <- row.asAt[String](2)
+          taskId   <- TaskId.fromString(title).leftMap(e => DecoderError(e))
+        } yield Local(date, duration, title, taskId)
     }
   }
 }
