@@ -127,7 +127,14 @@ object Choice {
               Opts.subcommand("add", "Add time entry to ClickUp")(
                 timelogAddOpts.map(op => Choice.Timelog(op))
               ),
-              Opts.subcommand("compare", "Compare local time entries with the ClickUp ones")(
+              Opts.subcommand(
+                "compare",
+                """|Compare local time entries with the ClickUp ones.
+                   |
+                   |The CSV file format should be: yyyy-MM-dd,hh:mm:ss,task-id
+                   |Example                      : 2022-10-03,1:22:46,TEST-123 - fix typo
+                   |""".stripMargin
+              )(
                 timelogCompareOpts.map(op => Choice.Timelog(op))
               ),
               Opts.subcommand("summary", "Show ClickUp time summary")(
