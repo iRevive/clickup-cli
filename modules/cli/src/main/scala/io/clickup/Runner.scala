@@ -13,8 +13,8 @@ object Runner {
     case Choice.Timelog(Choice.TimelogOp.List(range)) =>
       cli.listTimeEntries(range)
 
-    case Choice.Timelog(Choice.TimelogOp.Compare(range, delta, local, detailed)) =>
-      cli.compareTimelog(range, delta, local, detailed)
+    case Choice.Timelog(Choice.TimelogOp.Compare(range, delta, local, skip, detailed)) =>
+      cli.compareTimelog(range, delta, local, skip, detailed)
 
     case Choice.Timelog(Choice.TimelogOp.Add(taskId, date, duration, description)) =>
       cli.addTimeEntry(taskId, date, duration, description)

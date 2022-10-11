@@ -99,12 +99,18 @@ class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Confi
       _      <- Console[F].println("Time entry added successfully")
     } yield ()
 
-  def compareTimelog(range: TimeRange, delta: Option[FiniteDuration], localLogs: JPath, detailed: Boolean): F[Unit] =
+  def compareTimelog(
+      range: TimeRange,
+      delta: Option[FiniteDuration],
+      localLogs: JPath,
+      skip: Option[Int],
+      detailed: Boolean
+  ): F[Unit] =
     for {
       config        <- configSource.load
       (start, end)  <- Async[F].pure(TimeRange.dates(range, config.timezone))
       _             <- Console[F].println("Fetching local files")
-      localTimelogs <- loadLocal(localLogs)
+      localTimelogs <- loadLocal(localLogs, skip.getOrElse(0))
       _             <- Console[F].println("Fetching clickup logs")
       clickupTimelogs <- api.timeEntries(
         start.atStartOfDay(config.timezone).toInstant,
@@ -147,11 +153,12 @@ class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Confi
       _      <- configSource.write(config)
     } yield ()
 
-  private def loadLocal(path: JPath): F[List[Timelog.Local]] =
+  private def loadLocal(path: JPath, drop: Int): F[List[Timelog.Local]] =
     Files[F]
       .readAll(Path.fromNioPath(path))
       .through(fs2.text.utf8.decode)
       .through(fs2.text.lines)
+      .drop(drop)
       .filter(_.nonEmpty)
       .zipWithIndex
       .evalMap { case (line, index) =>

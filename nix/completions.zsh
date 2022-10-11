@@ -82,6 +82,7 @@ function _clickup-cli(){
             '--detailed[Whether to show the detailed information or not]'
             '--delta[Maximum time diff allowed, in seconds. Example: 60]'
             '--local-logs[The path to the CSV file with local time logs]'
+            '--skip-lines[How many lines to skip from the CSV file]'
             '--help[Display the help text]'
           )
           _arguments -C $timelog_compare_help
