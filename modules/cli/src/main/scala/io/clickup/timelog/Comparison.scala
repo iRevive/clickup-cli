@@ -78,10 +78,11 @@ object Comparison {
   ): List[Diff] = {
     val (diffs, clickupLeftovers) =
       local.foldLeft((List.empty[Diff], clickup.toList)) { case ((diffs, clickup), timelog) =>
-        val (diff, leftover) = findOne(clickup, timelog.taskId) match {
-          case (Some(value), leftover) => (calculateDiff(value, timelog, eqDelta), leftover)
-          case (None, _)               => (Diff.Absent(timelog.taskId, Platform.Clickup, timelog.duration), clickup)
-        }
+        val (diff, leftover) =
+          findOne(clickup, timelog.taskId) match {
+            case (Some(value), leftover) => (calculateDiff(value, timelog, eqDelta), leftover)
+            case (None, _)               => (Diff.Absent(timelog.taskId, Platform.Clickup, timelog.duration), clickup)
+          }
 
         (diffs :+ diff, leftover)
       }

@@ -21,7 +21,7 @@ final case class Task(
     customId: Option[TaskId],
     name: String,
     status: Status,
-    url: Option[String]
+    url: Option[TaskUrl]
 ) derives Decoder
 
 final case class TimeEntry(

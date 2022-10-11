@@ -45,9 +45,15 @@ object Choice {
 
   enum TimelogOp {
     case List(range: TimeRange)
-    case Compare(range: TimeRange, delta: Option[FiniteDuration], localLogs: JPath, detailed: Boolean)
     case Add(taskId: TaskId, date: Instant, duration: FiniteDuration, description: String)
     case Summary(range: TimeRange, detailed: Boolean)
+    case Compare(
+        range: TimeRange,
+        delta: Option[FiniteDuration],
+        localLogs: JPath,
+        skip: Option[Int],
+        detailed: Boolean
+    )
   }
 
   private val customRangeOpts: Opts[TimeRange.Custom] =
@@ -84,8 +90,9 @@ object Choice {
       rangeOpts,
       Opts.option[FiniteDuration]("delta", "Maximum diff allowed").orNone,
       Opts.option[JPath]("local-logs", "The path to the CSV file with local time logs"),
+      Opts.option[Int]("skip-lines", "How many lines to skip from the CSV file").orNone,
       detailedOpts
-    ).mapN((range, delta, path, detailed) => TimelogOp.Compare(range, delta, path, detailed))
+    ).mapN((range, delta, path, skip, detailed) => TimelogOp.Compare(range, delta, path, skip, detailed))
 
   private val timelogAddOpts: Opts[TimelogOp.Add] =
     (
@@ -120,7 +127,14 @@ object Choice {
               Opts.subcommand("add", "Add time entry to ClickUp")(
                 timelogAddOpts.map(op => Choice.Timelog(op))
               ),
-              Opts.subcommand("compare", "Compare local time entries with the ClickUp ones")(
+              Opts.subcommand(
+                "compare",
+                """|Compare local time entries with the ClickUp ones.
+                   |
+                   |The CSV file format should be: yyyy-MM-dd,hh:mm:ss,task-id
+                   |Example                      : 2022-10-03,1:22:46,TEST-123 - fix typo
+                   |""".stripMargin
+              )(
                 timelogCompareOpts.map(op => Choice.Timelog(op))
               ),
               Opts.subcommand("summary", "Show ClickUp time summary")(
