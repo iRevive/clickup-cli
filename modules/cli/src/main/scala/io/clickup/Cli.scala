@@ -158,9 +158,8 @@ class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Confi
     Files[F]
       .readAll(Path.fromNioPath(path))
       .through(fs2.text.utf8.decode)
-      .through(fs2.text.lines)
-      .drop(drop)
       .through(lowlevel.rows[F, String]())
+      .drop(drop)
       .through(lowlevel.decode[F, Timelog.Local])
       .compile
       .toList
