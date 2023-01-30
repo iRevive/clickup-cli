@@ -36,7 +36,7 @@ class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Confi
         api
           .taskInfo(taskId, config.teamId, config.apiToken)
           .redeemWith(
-            error => Console[F].println(s"Task [$taskId - cannot fetch info due to ${error.getMessage}"),
+            error => Console[F].println(s"Task [$taskId] - cannot fetch info due to ${error.getMessage}"),
             task => {
               val status = task.status.status.hexColor(task.status.color)
 
