@@ -54,6 +54,12 @@ object Choice {
         skip: Option[Int],
         detailed: Boolean
     )
+    case Sync(
+                  range: TimeRange,
+                  delta: Option[FiniteDuration],
+                  localLogs: JPath,
+                  skip: Option[Int]
+                )
   }
 
   private val customRangeOpts: Opts[TimeRange.Custom] =
@@ -93,6 +99,14 @@ object Choice {
       Opts.option[Int]("skip-lines", "How many lines to skip from the CSV file").orNone,
       detailedOpts
     ).mapN((range, delta, path, skip, detailed) => TimelogOp.Compare(range, delta, path, skip, detailed))
+
+  private val timelogSyncOpts: Opts[TimelogOp.Sync] =
+    (
+      rangeOpts,
+      Opts.option[FiniteDuration]("delta", "Maximum diff allowed").orNone,
+      Opts.option[JPath]("local-logs", "The path to the CSV file with local time logs"),
+      Opts.option[Int]("skip-lines", "How many lines to skip from the CSV file").orNone,
+      ).mapN((range, delta, path, skip) => TimelogOp.Sync(range, delta, path, skip))
 
   private val timelogAddOpts: Opts[TimelogOp.Add] =
     (
@@ -139,6 +153,9 @@ object Choice {
               ),
               Opts.subcommand("summary", "Show ClickUp time summary")(
                 timelogSummaryOpts.map(op => Choice.Timelog(op))
+              ),
+              Opts.subcommand("sync", "Sync ClickUp time logs with the local once")(
+                timelogSyncOpts.map(op => Choice.Timelog(op))
               )
             )
             .reduceK
