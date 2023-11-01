@@ -1,6 +1,5 @@
 package io.clickup.util
 
-import cats.Show
 import org.polyvariant.colorize.*
 import org.polyvariant.colorize.string.ColorizedString
 

@@ -1,19 +1,16 @@
 package io.clickup
 
 import java.time.ZoneOffset
-import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 import cats.Monad
-import cats.effect.{Async, Ref}
+import cats.effect.{Async, Concurrent, Ref}
 import cats.effect.std.Console
 import cats.syntax.applicativeError.*
 import cats.syntax.either.*
 import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
 import cats.syntax.functor.*
-import cats.syntax.monadError.*
-import cats.syntax.traverse.*
 import fs2.{Pipe, Stream}
 import fs2.io.file.{Files, Flags, NoSuchFileException, Path}
 import io.circe.{Decoder, DecodingFailure, Encoder, Json, Printer}
@@ -114,7 +111,7 @@ object Config {
         def write(config: Config): F[Unit] = underlying.write(config)
       }
 
-    def default[F[_]: Async](configPath: Path): Source[F] =
+    def default[F[_]: Concurrent: Files](configPath: Path): Source[F] =
       new Source[F] {
         private val createOrOverwriteFile: Pipe[F, Byte, Nothing] = bytes =>
           Stream.exec(configPath.parent.traverse_(Files[F].createDirectories)) ++
@@ -123,7 +120,7 @@ object Config {
         def load: F[Config] =
           for {
             content <- Files[F].readAll(configPath).through(fs2.text.utf8.decode).compile.string
-            config  <- Async[F].fromEither(io.circe.parser.decode[Config](content))
+            config  <- Concurrent[F].fromEither(io.circe.parser.decode[Config](content))
           } yield config
 
         def write(config: Config): F[Unit] =

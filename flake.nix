@@ -2,7 +2,7 @@
   description = "clickup-cli";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/22.05";
+    nixpkgs.url = "github:nixos/nixpkgs/release-23.05";
     hestia.url = "github:iRevive/hestia-nix";
     flake-utils.url = "github:numtide/flake-utils";
     flake-compat = {

@@ -3,20 +3,15 @@ package io.clickup.timelog
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-import cats.Monad
-import cats.Order
-import cats.Semigroup
+import cats.{Monad, Semigroup}
 import cats.data.NonEmptyList
 import cats.effect.std.Console
 import cats.syntax.applicative.*
-import cats.syntax.functor.*
 import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
+import cats.syntax.functor.*
 import cats.syntax.reducible.*
-import io.clickup.api.TimeEntries
-import io.clickup.model.TeamId
-import io.clickup.model.TaskId
-import io.clickup.util.color.*
+import io.clickup.model.{TaskId, TeamId}
 import io.clickup.util.time.*
 import org.polyvariant.colorize.trueColor.*
 

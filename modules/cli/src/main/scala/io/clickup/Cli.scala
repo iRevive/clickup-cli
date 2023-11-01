@@ -2,14 +2,11 @@ package io.clickup
 
 import java.nio.file.Path as JPath
 import java.time.{Instant, LocalDate}
-import java.time.temporal.ChronoUnit
 
 import cats.Parallel
 import cats.data.NonEmptyList
 import cats.effect.Async
 import cats.effect.std.Console
-import cats.syntax.applicative.*
-import cats.syntax.applicativeError.*
 import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
 import cats.syntax.functor.*
@@ -20,14 +17,13 @@ import fs2.io.file.{Files, Path}
 import io.clickup.api.ApiClient
 import io.clickup.model.{TaskId, TimeRange}
 import io.clickup.timelog.{Comparison, Report, Summary, Timelog}
-import io.clickup.util.Prompt
 import io.clickup.util.color.*
 import io.clickup.util.time.*
 import org.polyvariant.colorize.trueColor.*
 
 import scala.concurrent.duration.FiniteDuration
 
-class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Config.Source[F]) {
+class Cli[F[_]: Async: Parallel: Console: Files](api: ApiClient[F], configSource: Config.Source[F]) {
 
   def taskSummary(ids: NonEmptyList[TaskId], detailed: Boolean): F[Unit] =
     for {

@@ -2,7 +2,7 @@ package io.clickup.api
 
 import java.time.Instant
 
-import io.circe.{Decoder, Encoder}
+import io.circe.Decoder
 import io.circe.generic.auto.*
 import io.clickup.model.*
 
