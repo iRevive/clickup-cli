@@ -3,14 +3,11 @@ package io.clickup
 import java.time.{Instant, LocalDate}
 
 import cats.Show
-import cats.effect.*
 import com.monovore.decline.Command
-import io.clickup.model.TaskId
-import io.clickup.model.TimeRange
+import io.clickup.model.{TaskId, TimeRange}
+import org.scalacheck.{Arbitrary, Gen}
 import weaver.*
 import weaver.scalacheck.Checkers
-import org.scalacheck.Arbitrary
-import org.scalacheck.Gen
 
 import scala.concurrent.duration.*
 

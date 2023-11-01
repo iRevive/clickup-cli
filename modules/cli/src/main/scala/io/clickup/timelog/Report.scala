@@ -6,9 +6,6 @@ import cats.syntax.applicative.*
 import cats.syntax.eq.*
 import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
-import cats.syntax.functor.*
-import cats.syntax.reducible.*
-import cats.syntax.traverse.*
 import io.clickup.model.{TaskId, TeamId}
 import io.clickup.util.time.*
 

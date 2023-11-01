@@ -8,7 +8,8 @@ import cats.effect.unsafe.IORuntime
 import cats.syntax.functor.*
 import com.monovore.decline.Opts
 import com.monovore.decline.effect.CommandIOApp
-import fs2.io.file.Path
+import fs2.io.file.{Files, Path}
+import fs2.io.net.Network
 import io.clickup.api.ApiClient
 
 object Main extends CommandIOApp(
@@ -24,7 +25,7 @@ object Main extends CommandIOApp(
       makeProgram[IO].use(_.run(choice)).as(ExitCode.Success)
     }
 
-  private def makeProgram[F[_]: Async: Parallel: Console]: Resource[F, Runner[F]] =
+  private def makeProgram[F[_]: Async: Parallel: Console: Network: Files]: Resource[F, Runner[F]] =
     for {
       configPath <- Resource.eval(configPath[F])
       configSource <- Resource.eval(
