@@ -2,13 +2,12 @@ package io.clickup.api
 
 import java.time.Instant
 
-import cats.effect.{Async, IO, Resource}
+import cats.effect.{Async, Resource}
 import cats.syntax.either.*
-import cats.syntax.flatMap.*
 import cats.syntax.functor.*
+import fs2.io.net.Network
 import io.circe.Json
 import io.circe.syntax.*
-import io.clickup.Config
 import io.clickup.model.{TaskId, TeamId}
 import org.http4s.{Header, Headers, Method, Request, Response, Uri}
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
@@ -91,7 +90,7 @@ class ApiClient[F[_]: Async](client: Client[F]) {
 
 object ApiClient {
 
-  def create[F[_]: Async]: Resource[F, ApiClient[F]] =
+  def create[F[_]: Async: Network]: Resource[F, ApiClient[F]] =
     for {
       client <- EmberClientBuilder.default[F].build
     } yield new ApiClient(client)

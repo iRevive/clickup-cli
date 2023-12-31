@@ -6,10 +6,8 @@ import cats.syntax.applicative.*
 import cats.syntax.eq.*
 import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
-import cats.syntax.functor.*
-import cats.syntax.reducible.*
-import cats.syntax.traverse.*
 import io.clickup.model.{TaskId, TeamId}
+import io.clickup.util.time.*
 
 object Report {
 
@@ -28,7 +26,7 @@ object Report {
         Console[F].println(s"[$date] has missing ClickUp entries:") >> logs.traverse_ {
           case Comparison.Log.Summed(taskId, platform, duration) =>
             Console[F].println(
-              s"  ❓   Task [${prettyTaskId(taskId)}] with duration of [${duration.toMinutes} minutes] is absent in $platform"
+              s"  ❓   Task [${prettyTaskId(taskId)}] with duration of [${duration.pretty}] is absent in $platform"
             )
         }
 
@@ -36,7 +34,7 @@ object Report {
         Console[F].println(s"[$date] has missing local entries:") >> logs.traverse_ {
           case Comparison.Log.Summed(taskId, platform, duration) =>
             Console[F].println(
-              s"  ❓   Task [${prettyTaskId(taskId)}] with duration of [${duration.toMinutes} minutes] is absent in $platform"
+              s"  ❓   Task [${prettyTaskId(taskId)}] with duration of [${duration.pretty}] is absent in $platform"
             )
         }
 
@@ -48,24 +46,24 @@ object Report {
         (Console[F].println(s"[$date] has differences:") >> diffs.traverse_ {
           case Diff.More(diff, left, _) =>
             Console[F].println(
-              s"  ⬆️    Task [${prettyTaskId(left.taskId)}] has more time in ClickUp. Diff [${diff.toSeconds} seconds]"
+              s"  ⬆️    Task [${prettyTaskId(left.taskId)}] has more time in ClickUp. Diff [${diff.pretty}]"
             )
 
           case Diff.Less(diff, left, _) =>
             Console[F].println(
-              s"  ⬇️    Task [${prettyTaskId(left.taskId)}] has less time in ClickUp. Diff [${diff.toSeconds} seconds]"
+              s"  ⬇️    Task [${prettyTaskId(left.taskId)}] has less time in ClickUp. Diff [${diff.pretty}]"
             )
 
           case Diff.Equal(delta, left, _) =>
             Console[F]
               .println(
-                s"  ✅   Task [${prettyTaskId(left.taskId)}] is in sync. Diff delta [${delta.toSeconds} seconds]"
+                s"  ✅   Task [${prettyTaskId(left.taskId)}] is in sync. Diff delta [${delta.pretty}]"
               )
               .whenA(detailed)
 
           case Diff.Absent(taskId, platform, duration) =>
             Console[F].println(
-              s"  ❓   Task [${prettyTaskId(taskId)}] with duration of [${duration.toMinutes} minutes] is absent in $platform"
+              s"  ❓   Task [${prettyTaskId(taskId)}] with duration of [${duration.pretty}] is absent in $platform"
             )
         }).whenA(detailed || !onlyEquals)
 

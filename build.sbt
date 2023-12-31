@@ -1,17 +1,17 @@
-ThisBuild / scalaVersion          := "3.2.0"
-ThisBuild / semanticdbEnabled     := true
-ThisBuild / semanticdbVersion     := scalafixSemanticdb.revision
-ThisBuild / scalafixDependencies  += "com.github.liancheng" %% "organize-imports" % "0.6.0"
-ThisBuild / githubWorkflowPublish := Nil
+ThisBuild / scalaVersion               := "3.3.1"
+ThisBuild / semanticdbEnabled          := true
+ThisBuild / semanticdbVersion          := scalafixSemanticdb.revision
+ThisBuild / githubWorkflowPublish      := Nil
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
 
-lazy val root =
-  project
-    .in(file("."))
-    .aggregate(cli.jvm, cli.native)
-    .settings(name := "clickup-cli-root")
-    .settings(noPublishSettings)
+lazy val root = project
+  .in(file("."))
+  .aggregate(cli.jvm, cli.native)
+  .settings(name := "clickup-cli-root")
+  .settings(noPublishSettings)
 
 lazy val cli = crossProject(JVMPlatform, NativePlatform)
+  .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("./modules/cli"))
   .enablePlugins(BuildInfoPlugin)
@@ -21,19 +21,19 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
     Compile / mainClass := Some("io.clickup.Main"),
     run / fork          := true,
     libraryDependencies ++= Seq(
-      "org.typelevel"       %%% "cats-effect"         % "3.3.14",
-      "com.monovore"        %%% "decline-effect"      % "2.3.1",
-      "co.fs2"              %%% "fs2-io"              % "3.3.0",
-      "org.gnieh"           %%% "fs2-data-csv"        % "1.5.1",
-      "org.http4s"          %%% "http4s-core"         % "0.23.16",
-      "org.http4s"          %%% "http4s-client"       % "0.23.16",
-      "org.http4s"          %%% "http4s-ember-client" % "0.23.16",
-      "org.http4s"          %%% "http4s-circe"        % "0.23.16",
-      "org.polyvariant"     %%% "colorize"            % "0.3.0",
-      "io.circe"            %%% "circe-parser"        % "0.14.3",
-      "io.circe"            %%% "circe-generic"       % "0.14.3",
-      "com.disneystreaming" %%% "weaver-cats"         % "0.8.0" % Test,
-      "com.disneystreaming" %%% "weaver-scalacheck"   % "0.8.0" % Test
+      "org.typelevel"       %%% "cats-effect"         % "3.5.2",
+      "com.monovore"        %%% "decline-effect"      % "2.4.1",
+      "co.fs2"              %%% "fs2-io"              % "3.9.2",
+      "org.gnieh"           %%% "fs2-data-csv"        % "1.9.1",
+      "org.http4s"          %%% "http4s-core"         % "0.23.23",
+      "org.http4s"          %%% "http4s-client"       % "0.23.23",
+      "org.http4s"          %%% "http4s-ember-client" % "0.23.23",
+      "org.http4s"          %%% "http4s-circe"        % "0.23.23",
+      "org.polyvariant"     %%% "colorize"            % "0.3.2",
+      "io.circe"            %%% "circe-parser"        % "0.14.6",
+      "io.circe"            %%% "circe-generic"       % "0.14.6",
+      "com.disneystreaming" %%% "weaver-cats"         % "0.8.3" % Test,
+      "com.disneystreaming" %%% "weaver-scalacheck"   % "0.8.3" % Test
     ),
     testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
     scalacOptions ++= Seq(
@@ -47,7 +47,7 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
     buildInfoKeys    := Seq[BuildInfoKey](version)
   )
   .nativeSettings(
-    libraryDependencies += "com.armanbilge" %%% "epollcat" % "0.1.1" // tcp for fs2
+    libraryDependencies += "com.armanbilge" %%% "epollcat" % "0.1.6" // tcp for fs2
   )
 
 lazy val generateBinarySettings = {

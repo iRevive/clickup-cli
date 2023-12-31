@@ -8,7 +8,10 @@ import scala.concurrent.duration.FiniteDuration
 object time {
 
   extension (duration: FiniteDuration) {
-    def pretty: String = prettyRec(Nil, timeUnitList, duration)
+    def pretty: String = {
+      val d = if (duration.length < 0) -duration else duration
+      prettyRec(Nil, timeUnitList, d)
+    }
   }
 
   private val timeUnitList: List[TimeUnit] =

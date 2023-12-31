@@ -4,7 +4,6 @@ import java.time.LocalDate
 
 import cats.Semigroup
 import cats.data.NonEmptyList
-import cats.syntax.foldable.*
 import cats.syntax.semigroup.*
 import io.clickup.model.TaskId
 

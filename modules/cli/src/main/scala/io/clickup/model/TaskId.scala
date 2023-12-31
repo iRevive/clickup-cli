@@ -1,7 +1,6 @@
 package io.clickup.model
 
 import cats.Order
-import cats.syntax.contravariant.*
 import io.circe.{Decoder, Encoder}
 
 opaque type TaskId = String

@@ -2,7 +2,6 @@ package io.clickup
 
 import java.nio.file.Path as JPath
 import java.time.{Instant, LocalDate, ZoneOffset}
-import java.time.temporal.ChronoUnit
 
 import cats.Parallel
 import cats.data.NonEmptyList
@@ -21,14 +20,13 @@ import fs2.io.file.{Files, Path}
 import io.clickup.api.{ApiClient, ApiToken}
 import io.clickup.model.{TaskId, TeamId, TimeRange}
 import io.clickup.timelog.{Comparison, Report, Summary, Timelog}
-import io.clickup.util.Prompt
 import io.clickup.util.color.*
 import io.clickup.util.time.*
 import org.polyvariant.colorize.trueColor.*
 
 import scala.concurrent.duration.*
 
-class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Config.Source[F]) {
+class Cli[F[_]: Async: Parallel: Console: Files](api: ApiClient[F], configSource: Config.Source[F]) {
 
   def taskSummary(ids: NonEmptyList[TaskId], detailed: Boolean): F[Unit] =
     for {
@@ -37,7 +35,7 @@ class Cli[F[_]: Async: Parallel: Console](api: ApiClient[F], configSource: Confi
         api
           .taskInfo(taskId, config.teamId, config.apiToken)
           .redeemWith(
-            error => Console[F].println(s"Task [$taskId - cannot fetch info due to ${error.getMessage}"),
+            error => Console[F].println(s"Task [$taskId] - cannot fetch info due to ${error.getMessage}"),
             task => {
               val status = task.status.status.hexColor(task.status.color)
 

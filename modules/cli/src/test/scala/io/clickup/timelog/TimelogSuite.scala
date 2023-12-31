@@ -1,6 +1,6 @@
 package io.clickup.timelog
 
-import java.time.{Instant, LocalDate}
+import java.time.LocalDate
 
 import cats.effect.*
 import fs2.Stream

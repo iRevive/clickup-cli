@@ -1,33 +1,17 @@
 package io.clickup
 
 import java.nio.file.Path as JPath
-import java.time.{Instant, LocalDate, ZoneOffset}
+import java.time.{Instant, LocalDate}
 import java.time.format.DateTimeFormatter
-import java.time.temporal.{TemporalAdjusters, WeekFields}
-import java.util.Locale
 
-import cats.MonadThrow
-import cats.data.{NonEmptyList, OptionT, Validated, ValidatedNel}
-import cats.effect.{Async, ExitCode, IO, Resource, Temporal}
-import cats.effect.std.Console
-import cats.syntax.applicative.*
+import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.syntax.apply.*
 import cats.syntax.either.*
 import cats.syntax.eq.*
 import cats.syntax.option.*
-import cats.syntax.flatMap.*
-import cats.syntax.functor.*
 import cats.syntax.reducible.*
-import cats.syntax.traverse.*
 import com.monovore.decline.*
-import com.monovore.decline.effect.*
-import fs2.io.file.Path
-import io.clickup.api.{ApiClient, ApiToken}
 import io.clickup.model.{TaskId, TeamId, TimeRange}
-import org.http4s.{EntityDecoder, Header, Headers, Method, Request, Uri}
-import org.http4s.circe.*
-import org.http4s.client.Client
-import org.http4s.ember.client.EmberClientBuilder
 
 import scala.concurrent.duration.*
 
