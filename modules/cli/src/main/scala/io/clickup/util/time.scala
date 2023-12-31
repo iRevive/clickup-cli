@@ -1,11 +1,20 @@
 package io.clickup.util
 
+import java.time.{Instant, ZoneId}
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
 import scala.annotation.tailrec
 import scala.concurrent.duration.FiniteDuration
 
 object time {
+
+  private val formatter =
+    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault)
+
+  extension (instant: Instant) {
+    def pretty: String = formatter.format(instant)
+  }
 
   extension (duration: FiniteDuration) {
     def pretty: String = {

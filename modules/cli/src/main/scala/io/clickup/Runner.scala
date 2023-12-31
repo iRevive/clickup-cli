@@ -22,8 +22,8 @@ object Runner {
     case Choice.Timelog(Choice.TimelogOp.Summary(range, detailed)) =>
       cli.summary(range, detailed)
 
-    case Choice.Timelog(Choice.TimelogOp.Sync(range, delta, local, skip)) =>
-      cli.sync(range, delta, local, skip)
+    case Choice.Timelog(Choice.TimelogOp.Sync(range, delta, local, skip, confirmed, dryRun)) =>
+      cli.sync(range, delta, local, skip, confirmed, dryRun)
 
     case Choice.Configure =>
       cli.configure

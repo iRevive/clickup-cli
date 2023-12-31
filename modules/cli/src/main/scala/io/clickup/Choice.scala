@@ -39,11 +39,13 @@ object Choice {
         detailed: Boolean
     )
     case Sync(
-                  range: TimeRange,
-                  delta: Option[FiniteDuration],
-                  localLogs: JPath,
-                  skip: Option[Int]
-                )
+        range: TimeRange,
+        delta: Option[FiniteDuration],
+        localLogs: JPath,
+        skip: Option[Int],
+        confirmed: Boolean,
+        dryRun: Boolean
+    )
   }
 
   private val customRangeOpts: Opts[TimeRange.Custom] =
@@ -90,7 +92,9 @@ object Choice {
       Opts.option[FiniteDuration]("delta", "Maximum diff allowed").orNone,
       Opts.option[JPath]("local-logs", "The path to the CSV file with local time logs"),
       Opts.option[Int]("skip-lines", "How many lines to skip from the CSV file").orNone,
-      ).mapN((range, delta, path, skip) => TimelogOp.Sync(range, delta, path, skip))
+      Opts.flag("confirmed", "Whether to run the sync in the confirmed mode").orFalse,
+      Opts.flag("dry-run", "Whether to execute the dry-run sync").orFalse,
+    ).mapN((range, delta, path, skip, confirmed, dryRun) => TimelogOp.Sync(range, delta, path, skip, confirmed, dryRun))
 
   private val timelogAddOpts: Opts[TimelogOp.Add] =
     (

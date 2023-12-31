@@ -1,6 +1,6 @@
 package io.clickup.timelog
 
-import java.time.{Instant, LocalDate, LocalTime, ZoneOffset}
+import java.time.{Instant, LocalDate, OffsetDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
 
 import cats.syntax.either.*
@@ -84,11 +84,11 @@ object Timelog {
           date     <- row.asAt[LocalDate](0)
           duration <- row.asAt[FiniteDuration](1)
           title    <- row.asAt[String](2)
-          start    <- row.asAt[Instant](3)
-          end      <- row.asAt[Instant](4)
+          start    <- row.asAt[OffsetDateTime](3)
+          end      <- row.asAt[OffsetDateTime](4)
           note     <- row.asAt[String](5).orElse(Right(""))
           taskId   <- TaskId.fromString(title).leftMap(e => DecoderError(e))
-        } yield LocalDetailed(date, duration, start, end, title, taskId, note)
+        } yield LocalDetailed(date, duration, start.toInstant, end.toInstant, title, taskId, note)
     }
   }
 }

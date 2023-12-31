@@ -63,20 +63,18 @@ class ApiClient[F[_]: Async](client: Client[F]) {
       .withQueryParam("team_id", teamId.asInt)
 
     val body = Json.obj(
-      "tid"         -> taskId.asJson,
-      "description" -> description.asJson,
-      "start"       -> start.toEpochMilli.asJson,
-      "at"          -> start.toEpochMilli.asJson,
-      "billable"    -> false.asJson,
-      "duration"    -> duration.toMillis.asJson
+      "tid"         := taskId,
+      "description" := description,
+      "start"       := start.toEpochMilli,
+      "billable"    := false,
+      "duration"    := duration.toMillis
     )
 
     val request =
       Request[F](Method.POST, uri, headers = Headers(Header.Raw(ci"Authorization", token.value))).withEntity(body)
 
     for {
-      response <- client.expectOr[Json](request)(onError)
-      _ = println(response)
+      _ <- client.expectOr[Json](request)(onError)
     } yield ()
   }
 
