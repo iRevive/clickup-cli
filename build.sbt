@@ -20,6 +20,11 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
     ),
     name = Some("Install s2n, utf8proc"),
     cond = Some("matrix.os == 'ubuntu-latest'")
+  ),
+  WorkflowStep.Run(
+    commands = List(
+      "ld -ls2n"
+    )
   )
 )
 
@@ -34,8 +39,17 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(condition),
         env = Map(
           "SCALANATIVE_MODE" -> scala.scalanative.build.Mode.releaseFast.toString(),
-          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString(),
-        ),
+          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString()
+        )
+      ),
+      WorkflowStep.Sbt(
+        List(s"generateNativeBinary ./$binaryName"),
+        name = Some(s"Generate $os native binary"),
+        cond = Some(condition),
+        env = Map(
+          "SCALANATIVE_MODE" -> scala.scalanative.build.Mode.releaseFast.toString(),
+          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString()
+        )
       )
       /*WorkflowStep.Use(
         UseRef.Public("ncipollo", "release-action", "v1"),
@@ -50,8 +64,8 @@ ThisBuild / githubWorkflowBuildPostamble :=
   }
 
 lazy val binariesMatrix = Map(
-  "ubuntu-latest" -> "clickup-cli-linux-x86_64",
-  "macos-14"      -> "clickup-cli-macos-aarch64"
+  "ubuntu-latest" -> "clickup-cli-linux-x86_64"
+  // / "macos-14"      -> "clickup-cli-macos-aarch64"
 )
 
 lazy val root = project
@@ -65,7 +79,6 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("./modules/cli"))
   .enablePlugins(BuildInfoPlugin)
-  .settings(generateBinarySettings)
   .settings(
     name                := "clickup-cli",
     Compile / mainClass := Some("io.clickup.Main"),
@@ -100,21 +113,18 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
     libraryDependencies += "com.armanbilge" %%% "epollcat" % "0.1.6" // tcp for fs2
   )
 
-lazy val generateBinarySettings = {
-  val generateNativeBinary = inputKey[Unit]("Generate a native binary")
+lazy val cliNative            = cli.native
+lazy val generateNativeBinary = inputKey[Unit]("Generate a native binary")
+generateNativeBinary := {
+  val log  = streams.value.log
+  val args = sbt.complete.Parsers.spaceDelimited("<arg>").parsed
+  log.info(s"Compiling binary as $args for ${sys.props.get("os.name")}")
+  val binary = (cliNative / Compile / nativeLink).value
+  val output = file(args.headOption.getOrElse("./clickup-cli"))
 
-  Seq(
-    generateNativeBinary := {
-      val log    = streams.value.log
-      val args   = sbt.complete.Parsers.spaceDelimited("<arg>").parsed
-      val binary = (LocalProject("cliNative") / Compile / nativeLink).value
-      val output = file(args.headOption.getOrElse("./clickup-cli"))
-
-      log.info(s"Writing binary to $output")
-      IO.delete(output)
-      IO.copyFile(binary, output)
-    }
-  )
+  log.info(s"Writing binary to $output")
+  IO.delete(output)
+  IO.copyFile(binary, output)
 }
 
 lazy val noPublishSettings = Seq(

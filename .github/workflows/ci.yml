@@ -22,7 +22,7 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-14]
+        os: [ubuntu-latest]
         scala: [3.3.1]
         java: [temurin@21]
     runs-on: ${{ matrix.os }}
@@ -48,6 +48,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install clang && /home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc
 
+      - run: ld -ls2n
+
       - name: Check that workflows are up to date
         run: sbt '++ ${{ matrix.scala }}' githubWorkflowCheck
 
@@ -61,12 +63,12 @@ jobs:
           SCALANATIVE_LTO: thin
         run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-linux-x86_64'
 
-      - name: Generate macos-14 native binary
-        if: matrix.os == 'macos-14'
+      - name: Generate ubuntu-latest native binary
+        if: matrix.os == 'ubuntu-latest'
         env:
           SCALANATIVE_MODE: release-fast
           SCALANATIVE_LTO: thin
-        run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-macos-aarch64'
+        run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-linux-x86_64'
 
       - name: Compress target directories
         run: tar cf targets.tar target modules/cli/.jvm/target modules/cli/.native/target project/target
