@@ -23,7 +23,7 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   ),
   WorkflowStep.Run(
     commands = List(
-      "ld -ls2n"
+      "clang --version && ld -ls2n"
     )
   )
 )
