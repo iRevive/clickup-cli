@@ -4,18 +4,19 @@ ThisBuild / semanticdbVersion                   := scalafixSemanticdb.revision
 ThisBuild / githubWorkflowPublish               := Nil
 ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("21"))
 ThisBuild / githubWorkflowOSes                  := binariesMatrix.keys.toSeq
+ThisBuild / githubWorkflowTargetBranches        := Seq("**", "!update/**", "!pr/**")
 ThisBuild / githubWorkflowTargetTags           ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))
 
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   WorkflowStep.Run(
-    commands = List("brew install sbt"),
-    name = Some("Install sbt, s2n, utf2proc"),
+    commands = List("brew install sbt s2n utf8proc"),
+    name = Some("Install sbt, s2n, utf8proc"),
     cond = Some("matrix.os == 'macos-14'")
   ),
   WorkflowStep.Run(
-    commands = List("/home/linuxbrew/.linuxbrew/bin/brew install s2n utf2proc"),
-    name = Some("Install s2n, utf2proc"),
+    commands = List("/home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc"),
+    name = Some("Install s2n, utf8proc"),
     cond = Some("matrix.os == 'ubuntu-latest'")
   )
 )

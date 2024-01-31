@@ -9,9 +9,9 @@ name: Continuous Integration
 
 on:
   pull_request:
-    branches: ['**']
+    branches: ['**', '!update/**', '!pr/**']
   push:
-    branches: ['**']
+    branches: ['**', '!update/**', '!pr/**']
     tags: [v*]
 
 env:
@@ -40,13 +40,13 @@ jobs:
           java-version: 21
           cache: sbt
 
-      - name: Install sbt, s2n, utf2proc
+      - name: Install sbt, s2n, utf8proc
         if: matrix.os == 'macos-14'
-        run: brew install sbt
+        run: brew install sbt s2n utf8proc
 
-      - name: Install s2n, utf2proc
+      - name: Install s2n, utf8proc
         if: matrix.os == 'ubuntu-latest'
-        run: /home/linuxbrew/.linuxbrew/bin/brew install s2n utf2proc
+        run: /home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc
 
       - name: Check that workflows are up to date
         run: sbt '++ ${{ matrix.scala }}' githubWorkflowCheck
