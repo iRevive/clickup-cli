@@ -31,7 +31,11 @@ ThisBuild / githubWorkflowBuildPostamble :=
       WorkflowStep.Sbt(
         List(s"generateNativeBinary ./$binaryName"),
         name = Some(s"Generate $os native binary"),
-        cond = Some(condition)
+        cond = Some(condition),
+        env = Map(
+          "SCALANATIVE_MODE" -> scala.scalanative.build.Mode.releaseFast.toString(),
+          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString(),
+        ),
       )
       /*WorkflowStep.Use(
         UseRef.Public("ncipollo", "release-action", "v1"),
