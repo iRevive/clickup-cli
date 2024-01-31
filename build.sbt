@@ -15,7 +15,9 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
     cond = Some("matrix.os == 'macos-14'")
   ),
   WorkflowStep.Run(
-    commands = List("/home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc"),
+    commands = List(
+      "sudo apt-get update && sudo apt-get install clang && /home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc"
+    ),
     name = Some("Install s2n, utf8proc"),
     cond = Some("matrix.os == 'ubuntu-latest'")
   )
