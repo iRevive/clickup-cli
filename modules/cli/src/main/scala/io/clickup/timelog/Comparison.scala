@@ -47,7 +47,7 @@ object Comparison {
       byDateMap(clickupTimelogs.map(log => Log.Single(log.taskId, log.date, Platform.Clickup, log.duration)))
 
     val local: Map[LocalDate, NonEmptyList[Log.Summed]] =
-      byDateMap(localTimelogs.map(log => Log.Single(log.taskId, log.date, Platform.Clickup, log.duration)))
+      byDateMap(localTimelogs.map(log => Log.Single(log.taskId, log.date, Platform.Local, log.duration)))
 
     LazyList
       .iterate(start)(_.plusDays(1))
