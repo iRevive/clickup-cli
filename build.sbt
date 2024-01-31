@@ -1,12 +1,20 @@
-ThisBuild / scalaVersion               := "3.3.1"
-ThisBuild / semanticdbEnabled          := true
-ThisBuild / semanticdbVersion          := scalafixSemanticdb.revision
-ThisBuild / githubWorkflowPublish      := Nil
-ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("21"))
-ThisBuild / githubWorkflowOSes         := binariesMatrix.keys.toSeq
-ThisBuild / githubWorkflowTargetTags  ++= Seq("v*")
-
+ThisBuild / scalaVersion                        := "3.3.1"
+ThisBuild / semanticdbEnabled                   := true
+ThisBuild / semanticdbVersion                   := scalafixSemanticdb.revision
+ThisBuild / githubWorkflowPublish               := Nil
+ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("21"))
+ThisBuild / githubWorkflowOSes                  := binariesMatrix.keys.toSeq
+ThisBuild / githubWorkflowTargetTags           ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))
+
+ThisBuild / githubWorkflowBuildPreamble ++= Seq(
+  WorkflowStep.Run(
+    commands = List("brew install sbt"),
+    name = Some("Install sbt"),
+    cond = Some(s"matrix.os == 'macos-14'")
+  )
+)
+
 ThisBuild / githubWorkflowBuildPostamble :=
   binariesMatrix.toSeq.flatMap { case (os, binaryName) =>
     // val condition = s"startsWith(github.ref, 'refs/tags/v') && matrix.os == '$os'"
