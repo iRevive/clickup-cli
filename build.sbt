@@ -2,7 +2,37 @@ ThisBuild / scalaVersion               := "3.3.1"
 ThisBuild / semanticdbEnabled          := true
 ThisBuild / semanticdbVersion          := scalafixSemanticdb.revision
 ThisBuild / githubWorkflowPublish      := Nil
-ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("21"))
+ThisBuild / githubWorkflowOSes         := binariesMatrix.keys.toSeq
+ThisBuild / githubWorkflowTargetTags  ++= Seq("v*")
+
+ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))
+ThisBuild / githubWorkflowBuildPostamble :=
+  binariesMatrix.toSeq.flatMap { case (os, binaryName) =>
+    // val condition = s"startsWith(github.ref, 'refs/tags/v') && matrix.os == '$os'"
+    val condition = s"matrix.os == '$os'"
+    Seq(
+      WorkflowStep.Sbt(
+        List(s"generateNativeBinary ./$binaryName"),
+        name = Some(s"Generate $os native binary"),
+        cond = Some(condition)
+      )
+      /*WorkflowStep.Use(
+        UseRef.Public("ncipollo", "release-action", "v1"),
+        name = Some(s"Upload $binaryName"),
+        params = Map(
+          "allowUpdates" -> "true",
+          "artifacts"    -> binaryName
+        ),
+        cond = Some(condition)
+      )*/
+    )
+  }
+
+lazy val binariesMatrix = Map(
+  "ubuntu-latest" -> "clickup-cli-linux-x86_64",
+  "macos-14"      -> "clickup-cli-macos-aarch64"
+)
 
 lazy val root = project
   .in(file("."))
@@ -51,13 +81,16 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
   )
 
 lazy val generateBinarySettings = {
-  val generateNativeBinary = taskKey[Unit]("Generate native binary")
+  val generateNativeBinary = inputKey[Unit]("Generate a native binary")
 
   Seq(
     generateNativeBinary := {
+      val log    = streams.value.log
+      val args   = sbt.complete.Parsers.spaceDelimited("<arg>").parsed
       val binary = (LocalProject("cliNative") / Compile / nativeLink).value
-      val output = file("./clickup-cli")
+      val output = file(args.headOption.getOrElse("./clickup-cli"))
 
+      log.info(s"Writing binary to $output")
       IO.delete(output)
       IO.copyFile(binary, output)
     }
