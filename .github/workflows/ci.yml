@@ -46,7 +46,7 @@ jobs:
 
       - name: Install s2n, utf8proc
         if: matrix.os == 'ubuntu-latest'
-        run: /home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc
+        run: sudo apt-get update && sudo apt-get install clang && /home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc
 
       - name: Check that workflows are up to date
         run: sbt '++ ${{ matrix.scala }}' githubWorkflowCheck
