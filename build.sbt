@@ -10,12 +10,13 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(R
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   WorkflowStep.Run(
     commands = List("brew install sbt"),
-    name = Some("Install sbt"),
-    cond = Some(s"matrix.os == 'macos-14'")
+    name = Some("Install sbt, s2n, utf2proc"),
+    cond = Some("matrix.os == 'macos-14'")
   ),
   WorkflowStep.Run(
-    commands = List("brew install s2n utf2proc"),
-    name = Some("Install s2n & utf2proc")
+    commands = List("/home/linuxbrew/.linuxbrew/bin/brew install s2n utf2proc"),
+    name = Some("Install s2n, utf2proc"),
+    cond = Some("matrix.os == 'ubuntu-latest'")
   )
 )
 
