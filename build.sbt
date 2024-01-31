@@ -12,6 +12,10 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
     commands = List("brew install sbt"),
     name = Some("Install sbt"),
     cond = Some(s"matrix.os == 'macos-14'")
+  ),
+  WorkflowStep.Run(
+    commands = List("brew install s2n utf2proc"),
+    name = Some("Install s2n & utf2proc")
   )
 )
 
