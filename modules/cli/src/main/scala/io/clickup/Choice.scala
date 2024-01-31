@@ -93,7 +93,7 @@ object Choice {
       Opts.option[JPath]("local-logs", "The path to the CSV file with local time logs"),
       Opts.option[Int]("skip-lines", "How many lines to skip from the CSV file").orNone,
       Opts.flag("confirmed", "Whether to run the sync in the confirmed mode").orFalse,
-      Opts.flag("dry-run", "Whether to execute the dry-run sync").orFalse,
+      Opts.flag("dry-run", "Whether to execute the dry-run sync").orFalse
     ).mapN((range, delta, path, skip, confirmed, dryRun) => TimelogOp.Sync(range, delta, path, skip, confirmed, dryRun))
 
   private val timelogAddOpts: Opts[TimelogOp.Add] =

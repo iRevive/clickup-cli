@@ -154,12 +154,22 @@ class Cli[F[_]: Async: Parallel: Console: Files](api: ApiClient[F], configSource
       confirmed: Boolean,
       dryRun: Boolean
   ): F[Unit] = {
-    given r1: Prompt.Read[Option[TaskId]] = new Prompt.Read[Option[TaskId]] {
+
+    given Prompt.Read[Boolean] = new Prompt.Read[Boolean] {
+      def read(input: String): Either[String, Boolean] =
+        input.toLowerCase match {
+          case "y" | "yes" | "true" => Right(true)
+          case "n" | "no" | "false" => Right(false)
+          case _                    => Left(s"Cannot decode [$input] as y/yes/true/n/no/false")
+        }
+    }
+
+    given taskIdRead: Prompt.Read[Option[TaskId]] = new Prompt.Read[Option[TaskId]] {
       def read(input: String): Either[String, Option[TaskId]] =
         if (input.trim.isEmpty) Right(None) else TaskId.fromString(input).map(Some(_))
     }
 
-    given r2: Prompt.Read[Option[FiniteDuration]] = new Prompt.Read[Option[FiniteDuration]] {
+    given finiteDurationRead: Prompt.Read[Option[FiniteDuration]] = new Prompt.Read[Option[FiniteDuration]] {
       def read(input: String): Either[String, Option[FiniteDuration]] =
         if (input.trim.isEmpty) Right(None)
         else {
@@ -172,12 +182,12 @@ class Cli[F[_]: Async: Parallel: Console: Files](api: ApiClient[F], configSource
         }
     }
 
-    given r3: Prompt.Read[Option[String]] = new Prompt.Read[Option[String]] {
+    given textRead: Prompt.Read[Option[String]] = new Prompt.Read[Option[String]] {
       def read(input: String): Either[String, Option[String]] =
         if (input.trim.isEmpty) Right(None) else Right(Some(input))
     }
 
-    given r4: Prompt.Read[Option[Instant]] = new Prompt.Read[Option[Instant]] {
+    given instantRead: Prompt.Read[Option[Instant]] = new Prompt.Read[Option[Instant]] {
       def read(input: String): Either[String, Option[Instant]] =
         if (input.trim.isEmpty) Right(None)
         else {
@@ -227,8 +237,17 @@ class Cli[F[_]: Async: Parallel: Console: Files](api: ApiClient[F], configSource
       }
 
     for {
-      config        <- configSource.load
-      (start, end)  <- Async[F].pure(TimeRange.dates(range, config.timezone))
+      config       <- configSource.load
+      (start, end) <- Async[F].pure(TimeRange.dates(range, config.timezone))
+
+      _ <- Console[F].println("Running a dry-run sync").whenA(dryRun)
+
+      _ <- Console[F]
+        .println("You are running synchronization in the confirmed mode. Are you sure?")
+        .whenA(confirmed && !dryRun)
+
+      _ <- Prompt.readWithRetries[F, Boolean]("Sure [y/n]: ").whenA(confirmed && !dryRun)
+
       _             <- Console[F].println("Fetching local files")
       localTimelogs <- loadLocal[Timelog.LocalDetailed](localLogs, skip.getOrElse(0))
       _             <- Console[F].println("Fetching clickup logs")
