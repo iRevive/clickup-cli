@@ -36,7 +36,7 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   ),
   WorkflowStep.Run(
     commands = List(
-      "clang --version && echo \"LLVM_BIN=/opt/homebrew/opt/llvm@$LLVM_VERSION/bin\" >> $GITHUB_ENV"
+      "clang --version && echo \"LLVM_BIN=/opt/homebrew/opt/llvm@17/bin\" >> $GITHUB_ENV"
     ),
     cond = Some("startsWith(matrix.os, 'macos')")
   )
