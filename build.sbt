@@ -11,12 +11,13 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(R
 lazy val brewFormulas = Set("s2n", "utf8proc")
 lazy val binariesMatrix = Map(
   "ubuntu-latest" -> "clickup-cli-linux-x86_64",
-  "macos-14"      -> "clickup-cli-macos-aarch64"
+  "macos-latest"  -> "clickup-cli-macos-darwin64"
+  // "macos-14"      -> "clickup-cli-macos-aarch64"
 )
 
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   WorkflowStep.Run(
-    commands = List(s"brew install sbt llvm@16 ${brewFormulas.mkString(" ")}"),
+    commands = List(s"brew install sbt ${brewFormulas.mkString(" ")}"),
     name = Some(s"Install sbt, ${brewFormulas.mkString(", ")} (MacOS)"),
     cond = Some("startsWith(matrix.os, 'macos')")
   ),
@@ -32,7 +33,9 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
     cond = Some("startsWith(matrix.os, 'ubuntu')")
   ),
   WorkflowStep.Run(
-    commands = List("clang --version && echo 'export PATH=\"/opt/homebrew/opt/llvm@16/bin:$PATH\"' >> /Users/runner/.bash_profile"),
+    commands = List(
+      "clang --version"
+    ),
     cond = Some("startsWith(matrix.os, 'macos')")
   )
 )
