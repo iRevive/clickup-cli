@@ -24,6 +24,9 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   WorkflowStep.Run(
     commands = List(
       "clang --version && ld -ls2n"
+    ),
+    env = Map(
+      "LD_LIBRARY_PATH" -> "/home/linuxbrew/.linuxbrew/lib"
     )
   )
 )
@@ -39,7 +42,8 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(condition),
         env = Map(
           "SCALANATIVE_MODE" -> scala.scalanative.build.Mode.releaseFast.toString(),
-          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString()
+          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString(),
+          "LD_LIBRARY_PATH"  -> "/home/linuxbrew/.linuxbrew/lib"
         )
       ),
       WorkflowStep.Sbt(
@@ -48,7 +52,8 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(condition),
         env = Map(
           "SCALANATIVE_MODE" -> scala.scalanative.build.Mode.releaseFast.toString(),
-          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString()
+          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString(),
+          "LD_LIBRARY_PATH"  -> "/home/linuxbrew/.linuxbrew/lib"
         )
       )
       /*WorkflowStep.Use(
