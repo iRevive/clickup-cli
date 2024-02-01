@@ -8,23 +8,35 @@ ThisBuild / githubWorkflowTargetBranches        := Seq("**", "!update/**", "!pr/
 ThisBuild / githubWorkflowTargetTags           ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))
 
+lazy val brewFormulas = Set("s2n", "utf8proc")
+lazy val binariesMatrix = Map(
+  "ubuntu-latest" -> "clickup-cli-linux-x86_64",
+  "macos-14"      -> "clickup-cli-macos-aarch64"
+)
+
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   WorkflowStep.Run(
-    commands = List("brew install sbt s2n utf8proc"),
-    name = Some("Install sbt, s2n, utf8proc"),
-    cond = Some("matrix.os == 'macos-14'")
+    commands = List(s"brew install sbt ${brewFormulas.mkString(" ")}"),
+    name = Some(s"Install sbt, ${brewFormulas.mkString(", ")} (MacOS)"),
+    cond = Some("startsWith(matrix.os, 'macos')")
   ),
   WorkflowStep.Run(
     commands = List(
-      "sudo apt-get update && sudo apt-get install clang && /home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc"
+      List(
+        "sudo apt-get update",
+        "sudo apt-get install clang",
+        s"/home/linuxbrew/.linuxbrew/bin/brew install ${brewFormulas.mkString(" ")}"
+      ).mkString(" && ")
     ),
-    name = Some("Install s2n, utf8proc"),
-    cond = Some("matrix.os == 'ubuntu-latest'")
+    name = Some(s"Install ${brewFormulas.mkString(", ")} (Ubuntu)"),
+    cond = Some("startsWith(matrix.os, 'ubuntu')")
   )
 )
 
 ThisBuild / githubWorkflowBuildPostamble :=
   binariesMatrix.toSeq.flatMap { case (os, binaryName) =>
+    import scala.scalanative.build._
+
     // val condition = s"startsWith(github.ref, 'refs/tags/v') && matrix.os == '$os'"
     val condition = s"matrix.os == '$os'"
     Seq(
@@ -33,17 +45,8 @@ ThisBuild / githubWorkflowBuildPostamble :=
         name = Some(s"Generate $os native binary"),
         cond = Some(condition),
         env = Map(
-          "SCALANATIVE_MODE" -> scala.scalanative.build.Mode.releaseFast.toString(),
-          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString()
-        )
-      ),
-      WorkflowStep.Sbt(
-        List(s"generateNativeBinary ./$binaryName"),
-        name = Some(s"Generate $os native binary"),
-        cond = Some(condition),
-        env = Map(
-          "SCALANATIVE_MODE" -> scala.scalanative.build.Mode.releaseFast.toString(),
-          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString()
+          "SCALANATIVE_MODE" -> Mode.releaseFull.name,
+          "SCALANATIVE_LTO"  -> LTO.thin.name
         )
       )
       /*WorkflowStep.Use(
@@ -57,11 +60,6 @@ ThisBuild / githubWorkflowBuildPostamble :=
       )*/
     )
   }
-
-lazy val binariesMatrix = Map(
-  "ubuntu-latest" -> "clickup-cli-linux-x86_64"
-  // / "macos-14"      -> "clickup-cli-macos-aarch64"
-)
 
 lazy val root = project
   .in(file("."))
