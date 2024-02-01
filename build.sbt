@@ -32,7 +32,8 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
     cond = Some("startsWith(matrix.os, 'ubuntu')")
   ),
   WorkflowStep.Run(
-    commands = List("clang --version && echo 'export PATH=\"/opt/homebrew/opt/llvm@16/bin:$PATH\"' >> /Users/runner/.bash_profile")
+    commands = List("clang --version && echo 'export PATH=\"/opt/homebrew/opt/llvm@16/bin:$PATH\"' >> /Users/runner/.bash_profile"),
+    cond = Some("startsWith(matrix.os, 'macos')")
   )
 )
 
