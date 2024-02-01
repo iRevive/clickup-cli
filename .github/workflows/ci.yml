@@ -57,14 +57,14 @@ jobs:
       - name: Generate ubuntu-latest native binary
         if: matrix.os == 'ubuntu-latest'
         env:
-          SCALANATIVE_MODE: release-full
+          SCALANATIVE_MODE: debug
           SCALANATIVE_LTO: thin
         run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-linux-x86_64'
 
       - name: Generate macos-14 native binary
         if: matrix.os == 'macos-14'
         env:
-          SCALANATIVE_MODE: release-full
+          SCALANATIVE_MODE: debug
           SCALANATIVE_LTO: thin
         run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-macos-aarch64'
 

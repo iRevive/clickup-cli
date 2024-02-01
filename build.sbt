@@ -45,7 +45,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
         name = Some(s"Generate $os native binary"),
         cond = Some(condition),
         env = Map(
-          "SCALANATIVE_MODE" -> Mode.releaseFull.name,
+          "SCALANATIVE_MODE" -> Mode.debug.name,
           "SCALANATIVE_LTO"  -> LTO.thin.name
         )
       )
