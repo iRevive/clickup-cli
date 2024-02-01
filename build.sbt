@@ -30,6 +30,9 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
     ),
     name = Some(s"Install ${brewFormulas.mkString(", ")} (Ubuntu)"),
     cond = Some("startsWith(matrix.os, 'ubuntu')")
+  ),
+  WorkflowStep.Run(
+    commands = List("clang --version")
   )
 )
 
@@ -110,9 +113,8 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
 lazy val cliNative            = cli.native
 lazy val generateNativeBinary = inputKey[Unit]("Generate a native binary")
 generateNativeBinary := {
-  val log  = streams.value.log
-  val args = sbt.complete.Parsers.spaceDelimited("<arg>").parsed
-  log.info(s"Compiling binary as $args for ${sys.props.get("os.name")}")
+  val log    = streams.value.log
+  val args   = sbt.complete.Parsers.spaceDelimited("<arg>").parsed
   val binary = (cliNative / Compile / nativeLink).value
   val output = file(args.headOption.getOrElse("./clickup-cli"))
 
