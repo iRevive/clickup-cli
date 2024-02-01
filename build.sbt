@@ -20,11 +20,6 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
     ),
     name = Some("Install s2n, utf8proc"),
     cond = Some("matrix.os == 'ubuntu-latest'")
-  ),
-  WorkflowStep.Run(
-    commands = List(
-      "clang --version && ld -ls2n"
-    )
   )
 )
 
