@@ -12,7 +12,7 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(R
 
 lazy val brewFormulas = Set("s2n", "utf8proc")
 lazy val binariesMatrix = Map(
-  "ubuntu-latest" -> "clickup-cli-linux-x86_64",
+//  "ubuntu-latest" -> "clickup-cli-linux-x86_64",
   "macos-14"      -> "clickup-cli-macos-aarch64"
   // "macos-latest"  -> "clickup-cli-macos-darwin64"
 )
