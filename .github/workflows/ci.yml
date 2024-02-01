@@ -48,9 +48,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install clang && /home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc
 
-      - env:
-          LD_LIBRARY_PATH: /home/linuxbrew/.linuxbrew/lib
-        run: clang --version && ld -ls2n
+      - run: clang --version && ld -ls2n
 
       - name: Check that workflows are up to date
         run: sbt '++ ${{ matrix.scala }}' githubWorkflowCheck
@@ -63,7 +61,6 @@ jobs:
         env:
           SCALANATIVE_MODE: release-fast
           SCALANATIVE_LTO: thin
-          LD_LIBRARY_PATH: /home/linuxbrew/.linuxbrew/lib
         run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-linux-x86_64'
 
       - name: Generate ubuntu-latest native binary
@@ -71,7 +68,6 @@ jobs:
         env:
           SCALANATIVE_MODE: release-fast
           SCALANATIVE_LTO: thin
-          LD_LIBRARY_PATH: /home/linuxbrew/.linuxbrew/lib
         run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-linux-x86_64'
 
       - name: Compress target directories

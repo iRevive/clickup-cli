@@ -24,9 +24,6 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   WorkflowStep.Run(
     commands = List(
       "clang --version && ld -ls2n"
-    ),
-    env = Map(
-      "LD_LIBRARY_PATH" -> "/home/linuxbrew/.linuxbrew/lib"
     )
   )
 )
@@ -42,8 +39,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(condition),
         env = Map(
           "SCALANATIVE_MODE" -> scala.scalanative.build.Mode.releaseFast.toString(),
-          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString(),
-          "LD_LIBRARY_PATH"  -> "/home/linuxbrew/.linuxbrew/lib"
+          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString()
         )
       ),
       WorkflowStep.Sbt(
@@ -52,8 +48,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(condition),
         env = Map(
           "SCALANATIVE_MODE" -> scala.scalanative.build.Mode.releaseFast.toString(),
-          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString(),
-          "LD_LIBRARY_PATH"  -> "/home/linuxbrew/.linuxbrew/lib"
+          "SCALANATIVE_LTO"  -> scala.scalanative.build.LTO.thin.toString()
         )
       )
       /*WorkflowStep.Use(
@@ -83,7 +78,7 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("./modules/cli"))
-  .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(BuildInfoPlugin, ScalaNativeBrewedConfigPlugin)
   .settings(
     name                := "clickup-cli",
     Compile / mainClass := Some("io.clickup.Main"),
@@ -110,9 +105,10 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
       "-old-syntax",
       "-Yretain-trees"
     ),
-    buildInfoPackage := "io.clickup",
-    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
-    buildInfoKeys    := Seq[BuildInfoKey](version)
+    buildInfoPackage   := "io.clickup",
+    buildInfoOptions   += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+    buildInfoKeys      := Seq[BuildInfoKey](version),
+    nativeBrewFormulas := Set("s2n", "utf8proc")
   )
   .nativeSettings(
     libraryDependencies += "com.armanbilge" %%% "epollcat" % "0.1.6" // tcp for fs2
