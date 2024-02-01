@@ -42,7 +42,7 @@ jobs:
 
       - name: Install sbt, s2n, utf8proc (MacOS)
         if: startsWith(matrix.os, 'macos')
-        run: brew install sbt clang s2n utf8proc
+        run: brew install sbt llvm@16 s2n utf8proc
 
       - name: Install s2n, utf8proc (Ubuntu)
         if: startsWith(matrix.os, 'ubuntu')

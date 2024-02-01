@@ -16,7 +16,7 @@ lazy val binariesMatrix = Map(
 
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   WorkflowStep.Run(
-    commands = List(s"brew install sbt clang ${brewFormulas.mkString(" ")}"),
+    commands = List(s"brew install sbt llvm@16 ${brewFormulas.mkString(" ")}"),
     name = Some(s"Install sbt, ${brewFormulas.mkString(", ")} (MacOS)"),
     cond = Some("startsWith(matrix.os, 'macos')")
   ),
