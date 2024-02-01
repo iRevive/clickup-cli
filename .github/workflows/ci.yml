@@ -57,6 +57,8 @@ jobs:
       - name: Build project
         run: sbt '++ ${{ matrix.scala }}' test
 
+      - run: sbt '++ ${{ matrix.scala }}' 'show cliNative/nativeConfig'
+
       - name: Generate macos-14 native binary
         if: matrix.os == 'macos-14'
         env:

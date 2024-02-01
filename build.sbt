@@ -50,6 +50,9 @@ ThisBuild / githubWorkflowBuildPostamble :=
     val condition = s"matrix.os == '$os'"
     Seq(
       WorkflowStep.Sbt(
+        List("show cliNative/nativeConfig"),
+      ),
+      WorkflowStep.Sbt(
         List(s"generateNativeBinary ./$binaryName"),
         name = Some(s"Generate $os native binary"),
         cond = Some(condition),
