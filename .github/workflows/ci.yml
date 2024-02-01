@@ -22,7 +22,7 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-14]
         scala: [3.3.1]
         java: [temurin@21]
     runs-on: ${{ matrix.os }}
@@ -42,14 +42,14 @@ jobs:
 
       - name: Install sbt, s2n, utf8proc (MacOS)
         if: startsWith(matrix.os, 'macos')
-        run: brew install sbt s2n utf8proc
+        run: brew install sbt llvm@17 s2n utf8proc
 
       - name: Install s2n, utf8proc (Ubuntu)
         if: startsWith(matrix.os, 'ubuntu')
         run: sudo apt-get update && sudo apt-get install clang && /home/linuxbrew/.linuxbrew/bin/brew install s2n utf8proc
 
       - if: startsWith(matrix.os, 'macos')
-        run: clang --version
+        run: clang --version && echo "LLVM_BIN=/opt/homebrew/opt/llvm@$LLVM_VERSION/bin" >> $GITHUB_ENV
 
       - name: Check that workflows are up to date
         run: sbt '++ ${{ matrix.scala }}' githubWorkflowCheck
@@ -64,12 +64,12 @@ jobs:
           SCALANATIVE_LTO: thin
         run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-linux-x86_64'
 
-      - name: Generate macos-latest native binary
-        if: matrix.os == 'macos-latest'
+      - name: Generate macos-14 native binary
+        if: matrix.os == 'macos-14'
         env:
           SCALANATIVE_MODE: debug
           SCALANATIVE_LTO: thin
-        run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-macos-darwin64'
+        run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-macos-aarch64'
 
       - name: Compress target directories
         run: tar cf targets.tar target modules/cli/.jvm/target modules/cli/.native/target project/target

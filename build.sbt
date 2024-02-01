@@ -1,3 +1,5 @@
+import scala.scalanative.build.{NativeConfig, Platform}
+
 ThisBuild / scalaVersion                        := "3.3.1"
 ThisBuild / semanticdbEnabled                   := true
 ThisBuild / semanticdbVersion                   := scalafixSemanticdb.revision
@@ -11,13 +13,13 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(R
 lazy val brewFormulas = Set("s2n", "utf8proc")
 lazy val binariesMatrix = Map(
   "ubuntu-latest" -> "clickup-cli-linux-x86_64",
-  "macos-latest"  -> "clickup-cli-macos-darwin64"
-  // "macos-14"      -> "clickup-cli-macos-aarch64"
+  "macos-14"      -> "clickup-cli-macos-aarch64"
+  // "macos-latest"  -> "clickup-cli-macos-darwin64"
 )
 
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   WorkflowStep.Run(
-    commands = List(s"brew install sbt ${brewFormulas.mkString(" ")}"),
+    commands = List(s"brew install sbt llvm@17 ${brewFormulas.mkString(" ")}"),
     name = Some(s"Install sbt, ${brewFormulas.mkString(", ")} (MacOS)"),
     cond = Some("startsWith(matrix.os, 'macos')")
   ),
@@ -34,7 +36,7 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   ),
   WorkflowStep.Run(
     commands = List(
-      "clang --version"
+      "clang --version && echo \"LLVM_BIN=/opt/homebrew/opt/llvm@$LLVM_VERSION/bin\" >> $GITHUB_ENV"
     ),
     cond = Some("startsWith(matrix.os, 'macos')")
   )
@@ -108,7 +110,8 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
     buildInfoPackage   := "io.clickup",
     buildInfoOptions   += sbtbuildinfo.BuildInfoOption.PackagePrivate,
     buildInfoKeys      := Seq[BuildInfoKey](version),
-    nativeBrewFormulas := Set("s2n", "utf8proc")
+    nativeBrewFormulas := Set("s2n", "utf8proc"),
+    nativeConfig ~= usesLibClang
   )
   .nativeSettings(
     libraryDependencies += "com.armanbilge" %%% "epollcat" % "0.1.6" // tcp for fs2
@@ -132,3 +135,69 @@ lazy val noPublishSettings = Seq(
   publishLocal    := {},
   publishArtifact := false
 )
+
+def usesLibClang(conf: NativeConfig) = {
+  val libraryName = "clang"
+
+  val (llvmInclude, llvmLib) = llvmFolder(conf.clang.toAbsolutePath())
+
+  val arm64 =
+    if (sys.props.get("os.arch").contains("aarch64")) Seq("-arch", "arm64") else Nil
+
+  conf
+    .withLinkingOptions(
+      conf.linkingOptions ++
+        Seq("-l" + libraryName) ++
+        llvmLib.map("-L" + _) ++ arm64
+    )
+    .withCompileOptions(
+      conf.compileOptions ++ llvmInclude.map("-I" + _) ++ arm64
+    )
+}
+
+def llvmFolder(clangPath: java.nio.file.Path): (List[String], List[String]) = {
+  import java.nio.file.Paths
+
+  val LLVM_MAJOR_VERSION = "17"
+
+  if (Platform.isMac) {
+    val detected =
+      sys.env
+        .get("LLVM_BIN")
+        .map(Paths.get(_))
+        .map(_.getParent)
+        .filter(_.toFile.exists)
+        .toList
+
+    val speculative =
+      if (detected.isEmpty)
+        List(
+          Paths.get(s"/usr/local/opt/llvm@$LLVM_MAJOR_VERSION"),
+          Paths.get("/usr/local/opt/llvm"),
+          Paths.get(s"/opt/homebrew/opt/llvm@$LLVM_MAJOR_VERSION"),
+          Paths.get("/opt/homebrew/opt/llvm")
+        )
+      else Nil
+
+    val all = (detected ++ speculative).dropWhile(!_.toFile.exists())
+
+    val includes = all
+      .map(_.resolve("include"))
+      .map(_.toAbsolutePath().toString)
+
+    val lib = all
+      .map(_.resolve("lib"))
+      .map(_.toAbsolutePath().toString)
+
+    includes -> lib
+  } else {
+    // <llvm-path>/bin/clang
+    val realPath   = clangPath.toRealPath()
+    val binFolder  = realPath.getParent()
+    val llvmFolder = binFolder.getParent()
+
+    if (llvmFolder.toFile.exists())
+      List(llvmFolder.resolve("include").toString) -> List(llvmFolder.resolve("lib").toString)
+    else Nil                                       -> Nil
+  }
+}
