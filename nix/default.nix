@@ -9,7 +9,7 @@ in
 sbt-derivation.lib.mkSbtDerivation {
   inherit pkgs version pname src;
 
-  depsSha256 = "sha256-nEKLKzH4XDEtHnLz9AHLVEvFrvUrPcGtGNN7hPb0USo";
+  depsSha256 = "sha256-uKYEPUUsGBMmvCxlfXY2u45BsKQ6y9d2R1wNqqYHlIk";
 
   nativeBuildInputs = [
     pkgs.s2n-tls
