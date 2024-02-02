@@ -4,7 +4,7 @@ ThisBuild / scalaVersion                        := "3.3.1"
 ThisBuild / semanticdbEnabled                   := true
 ThisBuild / semanticdbVersion                   := scalafixSemanticdb.revision
 ThisBuild / githubWorkflowPublish               := Nil
-ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("21"))
+ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("17"))
 ThisBuild / githubWorkflowOSes                  := binariesMatrix.keys.toSeq
 ThisBuild / githubWorkflowTargetBranches        := Seq("**", "!update/**", "!pr/**")
 ThisBuild / githubWorkflowTargetTags           ++= Seq("v*")
@@ -13,8 +13,8 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(R
 lazy val brewFormulas = Set("s2n", "utf8proc")
 lazy val binariesMatrix = Map(
 //  "ubuntu-latest" -> "clickup-cli-linux-x86_64",
-  "macos-14"      -> "clickup-cli-macos-aarch64"
-  // "macos-latest"  -> "clickup-cli-macos-darwin64"
+  "macos-14" -> "clickup-cli-macos-aarch64",
+  "macos-12" -> "clickup-cli-macos-darwin64"
 )
 
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(
@@ -50,7 +50,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
     val condition = s"matrix.os == '$os'"
     Seq(
       WorkflowStep.Sbt(
-        List("show cliNative/nativeConfig"),
+        List("show cliNative/nativeConfig")
       ),
       WorkflowStep.Sbt(
         List(s"generateNativeBinary ./$binaryName"),
