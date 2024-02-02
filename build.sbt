@@ -19,21 +19,20 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
     Compile / mainClass := Some("io.clickup.Main"),
     run / fork          := true,
     libraryDependencies ++= Seq(
-      "org.typelevel"       %%% "cats-effect"         % "3.5.2",
+      "org.typelevel"       %%% "cats-effect"         % "3.5.3",
       "com.monovore"        %%% "decline-effect"      % "2.4.1",
-      "co.fs2"              %%% "fs2-io"              % "3.9.2",
-      "org.gnieh"           %%% "fs2-data-csv"        % "1.9.1",
-      "org.http4s"          %%% "http4s-core"         % "0.23.23",
-      "org.http4s"          %%% "http4s-client"       % "0.23.23",
-      "org.http4s"          %%% "http4s-ember-client" % "0.23.23",
-      "org.http4s"          %%% "http4s-circe"        % "0.23.23",
+      "co.fs2"              %%% "fs2-io"              % "3.9.4",
+      "org.gnieh"           %%% "fs2-data-csv"        % "1.10.0",
+      "org.http4s"          %%% "http4s-core"         % "0.23.25",
+      "org.http4s"          %%% "http4s-client"       % "0.23.25",
+      "org.http4s"          %%% "http4s-ember-client" % "0.23.25",
+      "org.http4s"          %%% "http4s-circe"        % "0.23.25",
       "org.polyvariant"     %%% "colorize"            % "0.3.2",
       "io.circe"            %%% "circe-parser"        % "0.14.6",
       "io.circe"            %%% "circe-generic"       % "0.14.6",
-      "com.disneystreaming" %%% "weaver-cats"         % "0.8.3" % Test,
-      "com.disneystreaming" %%% "weaver-scalacheck"   % "0.8.3" % Test
+      "com.disneystreaming" %%% "weaver-cats"         % "0.8.4" % Test,
+      "com.disneystreaming" %%% "weaver-scalacheck"   % "0.8.4" % Test
     ),
-    testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
     scalacOptions ++= Seq(
       "-source:future",
       "-no-indent", // let's be conservative for a while
@@ -45,7 +44,7 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
     buildInfoKeys    := Seq[BuildInfoKey](version)
   )
   .nativeSettings(
-    nativeBrewFormulas  := Set("s2n", "utf8proc"),
+    nativeBrewFormulas  := brewFormulas,
     nativeConfig        ~= NativeConfigOpts.customize,
     libraryDependencies += "com.armanbilge" %%% "epollcat" % "0.1.6" // tcp for fs2
   )
