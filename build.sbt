@@ -4,7 +4,7 @@ ThisBuild / scalaVersion                        := "3.3.1"
 ThisBuild / semanticdbEnabled                   := true
 ThisBuild / semanticdbVersion                   := scalafixSemanticdb.revision
 ThisBuild / githubWorkflowPublish               := Nil
-ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("17"))
+ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("21"))
 ThisBuild / githubWorkflowOSes                  := binariesMatrix.keys.toSeq
 ThisBuild / githubWorkflowTargetBranches        := Seq("**", "!update/**", "!pr/**")
 ThisBuild / githubWorkflowTargetTags           ++= Seq("v*")
@@ -16,11 +16,12 @@ lazy val binariesMatrix = Map(
   "macos-14" -> "clickup-cli-macos-aarch64"
 //  "macos-12" -> "clickup-cli-macos-darwin64"
 )
+lazy val LLVM_VERSION = "17"
 
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   WorkflowStep.Run(
-    commands = List(s"brew install sbt llvm@17 ${brewFormulas.mkString(" ")}"),
-    name = Some(s"Install sbt, ${brewFormulas.mkString(", ")} (MacOS)"),
+    commands = List(s"brew install sbt llvm@$LLVM_VERSION ${brewFormulas.mkString(" ")}"),
+    name = Some(s"Install sbt, llvm@$LLVM_VERSION ${brewFormulas.mkString(", ")} (MacOS)"),
     cond = Some("startsWith(matrix.os, 'macos')")
   ),
   WorkflowStep.Run(
@@ -35,46 +36,46 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
     cond = Some("startsWith(matrix.os, 'ubuntu')")
   ),
   WorkflowStep.Run(
-    commands = List(
-      """if [ $(arch) == "arm64" ]; then
-        |  echo "LLVM_BIN=/opt/homebrew/opt/llvm@17/bin" >> $GITHUB_ENV
-        |else
-        |  echo "LLVM_BIN=/usr/local/opt/llvm@17/bin" >> $GITHUB_ENV
-        |fi""".stripMargin
-    ),
+    commands = List(s"""echo "LLVM_BIN=/opt/homebrew/opt/llvm@$LLVM_VERSION/bin" >> $$GITHUB_ENV"""),
+    name = Some("Sets env vars for LLVM"),
     cond = Some("startsWith(matrix.os, 'macos')")
   )
 )
 
-logLevel := Level.Debug
-
 ThisBuild / githubWorkflowBuildPostamble :=
   binariesMatrix.toSeq.flatMap { case (os, binaryName) =>
     import scala.scalanative.build._
+    val isTag       = "startsWith(github.ref, 'refs/tags/v')"
+    val osCondition = s"matrix.os == '$os'"
 
-    // val condition = s"startsWith(github.ref, 'refs/tags/v') && matrix.os == '$os'"
-    val condition = s"matrix.os == '$os'"
     Seq(
       WorkflowStep.Sbt(
-        List("show cliNative/nativeConfig")
-      ),
-      WorkflowStep.Sbt(
-        List(s"generateNativeBinary ./$binaryName"),
+        commands = List(s"generateNativeBinary ./$binaryName"),
         name = Some(s"Generate $os native binary"),
-        cond = Some(condition),
+        cond = Some(osCondition),
         env = Map(
-          "SCALANATIVE_MODE" -> Mode.releaseFull.name
+          "SCALANATIVE_MODE" -> s"$${{ $isTag && '${Mode.releaseFast}' || '${Mode.debug}' }}"
         )
-      )
-      /*WorkflowStep.Use(
-        UseRef.Public("ncipollo", "release-action", "v1"),
+      ),
+      WorkflowStep.Use(
+        ref = UseRef.Public("actions", "upload-artifact", "v4"),
         name = Some(s"Upload $binaryName"),
+        cond = Some(osCondition),
+        params = Map(
+          "name"              -> binaryName,
+          "path"              -> binaryName,
+          "if-no-files-found" -> "error"
+        )
+      ),
+      WorkflowStep.Use(
+        UseRef.Public("ncipollo", "release-action", "v1"),
+        name = Some(s"Attach $binaryName to release"),
+        cond = Some(s"$isTag && $osCondition"),
         params = Map(
           "allowUpdates" -> "true",
           "artifacts"    -> binaryName
-        ),
-        cond = Some(condition)
-      )*/
+        )
+      )
     )
   }
 
@@ -144,10 +145,11 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
+// based on https://github.com/indoorvivants/sn-bindgen/blob/main/build.sbt
 def usesLibClang(conf: NativeConfig) = {
   val libraryName = "clang"
 
-  val (llvmInclude, llvmLib) = llvmFolder(conf.clang.toAbsolutePath())
+  val (llvmInclude, llvmLib) = llvmFolder(conf.clang.toAbsolutePath)
 
   val arm64 =
     if (sys.props.get("os.arch").contains("aarch64")) Seq("-arch", "arm64") else Nil
@@ -165,9 +167,6 @@ def usesLibClang(conf: NativeConfig) = {
 
 def llvmFolder(clangPath: java.nio.file.Path): (List[String], List[String]) = {
   import java.nio.file.Paths
-
-  val LLVM_MAJOR_VERSION = "17"
-
   if (Platform.isMac) {
     val detected =
       sys.env
@@ -180,9 +179,9 @@ def llvmFolder(clangPath: java.nio.file.Path): (List[String], List[String]) = {
     val speculative =
       if (detected.isEmpty)
         List(
-          Paths.get(s"/usr/local/opt/llvm@$LLVM_MAJOR_VERSION"),
+          Paths.get(s"/usr/local/opt/llvm@$LLVM_VERSION"),
           Paths.get("/usr/local/opt/llvm"),
-          Paths.get(s"/opt/homebrew/opt/llvm@$LLVM_MAJOR_VERSION"),
+          Paths.get(s"/opt/homebrew/opt/llvm@$LLVM_VERSION"),
           Paths.get("/opt/homebrew/opt/llvm")
         )
       else Nil
@@ -191,21 +190,22 @@ def llvmFolder(clangPath: java.nio.file.Path): (List[String], List[String]) = {
 
     val includes = all
       .map(_.resolve("include"))
-      .map(_.toAbsolutePath().toString)
+      .map(_.toAbsolutePath.toString)
 
     val lib = all
       .map(_.resolve("lib"))
-      .map(_.toAbsolutePath().toString)
+      .map(_.toAbsolutePath.toString)
 
     includes -> lib
   } else {
     // <llvm-path>/bin/clang
     val realPath   = clangPath.toRealPath()
-    val binFolder  = realPath.getParent()
-    val llvmFolder = binFolder.getParent()
+    val binFolder  = realPath.getParent
+    val llvmFolder = binFolder.getParent
 
     if (llvmFolder.toFile.exists())
       List(llvmFolder.resolve("include").toString) -> List(llvmFolder.resolve("lib").toString)
-    else Nil                                       -> Nil
+    else
+      Nil -> Nil
   }
 }
