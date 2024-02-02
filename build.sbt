@@ -36,7 +36,11 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   ),
   WorkflowStep.Run(
     commands = List(
-      "clang --version && echo \"LLVM_BIN=/opt/homebrew/opt/llvm@17/bin\" >> $GITHUB_ENV"
+      """if [ $(arch) == "arm64" ]; then
+        |  echo "LLVM_BIN=/opt/homebrew/opt/llvm@17/bin" >> $GITHUB_ENV
+        |else
+        |  echo "LLVM_BIN=/usr/local/opt/llvm@17/bin" >> $GITHUB_ENV
+        |fi""".stripMargin
     ),
     cond = Some("startsWith(matrix.os, 'macos')")
   )
