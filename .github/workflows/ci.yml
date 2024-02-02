@@ -22,7 +22,7 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        os: [macos-14]
+        os: [ubuntu-latest, macos-14]
         scala: [3.3.1]
         java: [temurin@21]
     runs-on: ${{ matrix.os }}
@@ -58,6 +58,27 @@ jobs:
       - name: Build project
         run: sbt '++ ${{ matrix.scala }}' test
 
+      - name: Generate ubuntu-latest native binary
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          SCALANATIVE_MODE: ${{ startsWith(github.ref, 'refs/tags/v') && 'release-fast' || 'debug' }}
+        run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-linux-x86_64'
+
+      - name: Upload clickup-cli-linux-x86_64
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: clickup-cli-linux-x86_64
+          path: clickup-cli-linux-x86_64
+          if-no-files-found: error
+
+      - name: Attach clickup-cli-linux-x86_64 to a release
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest'
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: clickup-cli-linux-x86_64
+
       - name: Generate macos-14 native binary
         if: matrix.os == 'macos-14'
         env:
@@ -72,7 +93,7 @@ jobs:
           path: clickup-cli-macos-aarch64
           if-no-files-found: error
 
-      - name: Attach clickup-cli-macos-aarch64 to release
+      - name: Attach clickup-cli-macos-aarch64 to a release
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'macos-14'
         uses: ncipollo/release-action@v1
         with:
@@ -94,7 +115,7 @@ jobs:
     if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v'))
     strategy:
       matrix:
-        os: [macos-14]
+        os: [ubuntu-latest]
         scala: [3.3.1]
         java: [temurin@21]
     runs-on: ${{ matrix.os }}
