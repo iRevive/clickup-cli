@@ -67,8 +67,7 @@ jobs:
       - name: Generate macos-14 native binary
         if: matrix.os == 'macos-14'
         env:
-          SCALANATIVE_MODE: debug
-          SCALANATIVE_LTO: none
+          SCALANATIVE_MODE: release-full
         run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-macos-aarch64'
 
       - name: Compress target directories
