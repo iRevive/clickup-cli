@@ -12,7 +12,8 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("./modules/cli"))
-  .enablePlugins(BuildInfoPlugin, ScalaNativeBrewedConfigPlugin)
+  .enablePlugins(BuildInfoPlugin)
+  .nativeEnablePlugins(ScalaNativeBrewedConfigPlugin)
   .settings(
     name                := "clickup-cli",
     Compile / mainClass := Some("io.clickup.Main"),
@@ -39,13 +40,13 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
       "-old-syntax",
       "-Yretain-trees"
     ),
-    buildInfoPackage   := "io.clickup",
-    buildInfoOptions   += sbtbuildinfo.BuildInfoOption.PackagePrivate,
-    buildInfoKeys      := Seq[BuildInfoKey](version),
-    nativeBrewFormulas := Set("s2n", "utf8proc"),
-    nativeConfig       ~= NativeConfigOpts.customize
+    buildInfoPackage := "io.clickup",
+    buildInfoOptions += sbtbuildinfo.BuildInfoOption.PackagePrivate,
+    buildInfoKeys    := Seq[BuildInfoKey](version)
   )
   .nativeSettings(
+    nativeBrewFormulas  := Set("s2n", "utf8proc"),
+    nativeConfig        ~= NativeConfigOpts.customize,
     libraryDependencies += "com.armanbilge" %%% "epollcat" % "0.1.6" // tcp for fs2
   )
 
@@ -112,6 +113,8 @@ ThisBuild / githubWorkflowBuildPostamble :=
 
     val isTag       = "startsWith(github.ref, 'refs/tags/v')"
     val osCondition = s"matrix.os == '$os'"
+    val completions = "./nix/completions.zsh"
+    val artifacts   = s"$binaryName,$completions"
 
     Seq(
       WorkflowStep.Sbt(
@@ -128,7 +131,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(osCondition),
         params = Map(
           "name"              -> binaryName,
-          "path"              -> binaryName,
+          "path"              -> artifacts,
           "if-no-files-found" -> "error"
         )
       ),
@@ -138,7 +141,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(s"$isTag && $osCondition"),
         params = Map(
           "allowUpdates" -> "true",
-          "artifacts"    -> binaryName
+          "artifacts"    -> artifacts
         )
       )
     )
