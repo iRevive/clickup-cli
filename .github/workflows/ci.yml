@@ -22,7 +22,7 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        os: [macos-14, macos-12]
+        os: [macos-14]
         scala: [3.3.1]
         java: [temurin@17]
     runs-on: ${{ matrix.os }}
@@ -68,17 +68,8 @@ jobs:
         if: matrix.os == 'macos-14'
         env:
           SCALANATIVE_MODE: debug
-          SCALANATIVE_LTO: thin
+          SCALANATIVE_LTO: none
         run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-macos-aarch64'
-
-      - run: sbt '++ ${{ matrix.scala }}' 'show cliNative/nativeConfig'
-
-      - name: Generate macos-12 native binary
-        if: matrix.os == 'macos-12'
-        env:
-          SCALANATIVE_MODE: debug
-          SCALANATIVE_LTO: thin
-        run: sbt '++ ${{ matrix.scala }}' 'generateNativeBinary ./clickup-cli-macos-darwin64'
 
       - name: Compress target directories
         run: tar cf targets.tar target modules/cli/.jvm/target modules/cli/.native/target project/target

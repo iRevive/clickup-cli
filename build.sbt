@@ -13,8 +13,8 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(R
 lazy val brewFormulas = Set("s2n", "utf8proc")
 lazy val binariesMatrix = Map(
 //  "ubuntu-latest" -> "clickup-cli-linux-x86_64",
-  "macos-14" -> "clickup-cli-macos-aarch64",
-  "macos-12" -> "clickup-cli-macos-darwin64"
+  "macos-14" -> "clickup-cli-macos-aarch64"
+//  "macos-12" -> "clickup-cli-macos-darwin64"
 )
 
 ThisBuild / githubWorkflowBuildPreamble ++= Seq(
@@ -46,6 +46,8 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
   )
 )
 
+logLevel := Level.Debug
+
 ThisBuild / githubWorkflowBuildPostamble :=
   binariesMatrix.toSeq.flatMap { case (os, binaryName) =>
     import scala.scalanative.build._
@@ -62,7 +64,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(condition),
         env = Map(
           "SCALANATIVE_MODE" -> Mode.debug.name,
-          "SCALANATIVE_LTO"  -> LTO.thin.name
+          "SCALANATIVE_LTO"  -> LTO.none.name
         )
       )
       /*WorkflowStep.Use(
