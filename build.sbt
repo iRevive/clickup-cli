@@ -113,8 +113,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
 
     val isTag       = "startsWith(github.ref, 'refs/tags/v')"
     val osCondition = s"matrix.os == '$os'"
-    val completions = "./nix/completions.zsh"
-    val artifacts   = s"$binaryName,$completions"
+    val completions = "nix/completions.zsh"
 
     Seq(
       WorkflowStep.Sbt(
@@ -131,7 +130,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(osCondition),
         params = Map(
           "name"              -> binaryName,
-          "path"              -> artifacts,
+          "path"              -> s"$binaryName\n$completions",
           "if-no-files-found" -> "error"
         )
       ),
@@ -141,7 +140,7 @@ ThisBuild / githubWorkflowBuildPostamble :=
         cond = Some(s"$isTag && $osCondition"),
         params = Map(
           "allowUpdates" -> "true",
-          "artifacts"    -> artifacts
+          "artifacts"    -> s"$binaryName,$completions"
         )
       )
     )

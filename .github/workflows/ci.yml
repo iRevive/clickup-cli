@@ -69,7 +69,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: clickup-cli-linux-x86_64
-          path: clickup-cli-linux-x86_64,./nix/completions.zsh
+          path: |
+            clickup-cli-linux-x86_64
+            nix/completions.zsh
           if-no-files-found: error
 
       - name: Attach clickup-cli-linux-x86_64 to a release
@@ -77,7 +79,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: clickup-cli-linux-x86_64,./nix/completions.zsh
+          artifacts: clickup-cli-linux-x86_64,nix/completions.zsh
 
       - name: Generate macos-14 native binary
         if: matrix.os == 'macos-14'
@@ -90,7 +92,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: clickup-cli-macos-aarch64
-          path: clickup-cli-macos-aarch64,./nix/completions.zsh
+          path: |
+            clickup-cli-macos-aarch64
+            nix/completions.zsh
           if-no-files-found: error
 
       - name: Attach clickup-cli-macos-aarch64 to a release
@@ -98,7 +102,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: clickup-cli-macos-aarch64,./nix/completions.zsh
+          artifacts: clickup-cli-macos-aarch64,nix/completions.zsh
 
       - name: Compress target directories
         run: tar cf targets.tar target modules/cli/.jvm/target modules/cli/.native/target project/target
